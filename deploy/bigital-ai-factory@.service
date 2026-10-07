@@ -1,0 +1,25 @@
+[Unit]
+Description=Bigital AI Factory service
+Documentation=Bigital AI Factory
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/bigital-ai-factory
+EnvironmentFile=-%h/bigital-ai-factory/deploy/.env.production
+ExecStartPre=/usr/bin/env bash -lc 'mkdir -p %h/bigital-ai-factory/logs'
+ExecStart=/usr/bin/env bash -lc 'cd %h/bigital-ai-factory && pnpm run start'
+Restart=on-failure
+RestartSec=10
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+StandardOutput=append:%h/bigital-ai-factory/logs/bigital.log
+StandardError=append:%h/bigital-ai-factory/logs/bigital.err
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

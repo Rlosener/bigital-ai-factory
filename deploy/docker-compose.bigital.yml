@@ -1,0 +1,35 @@
+services:
+  bigital:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: bigital-ai-factory
+    restart: unless-stopped
+    command: ["sh", "-c", "node scripts/validate-factory-production.mjs && pnpm start:tailscale"]
+    env_file:
+      - .env.bigital
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8790
+      DB_PATH: /app/data/bigital.sqlite
+      LOGS_DIR: /app/data/logs
+      OAUTH_BASE_URL: https://agents.bigital.net
+      ALLOWED_ORIGINS: https://agents.bigital.net
+      ALLOWED_ORIGIN_SUFFIXES: ""
+    ports:
+      - "127.0.0.1:8790:8790"
+    volumes:
+      - bigital-data:/app/data
+      - bigital-agent-home:/home/app
+      - ${BIGITAL_PROJECTS_DIR:?Set BIGITAL_PROJECTS_DIR to your existing repository directory}:/workspace
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8790/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+volumes:
+  bigital-data:
+  bigital-agent-home:
